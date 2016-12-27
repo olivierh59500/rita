@@ -53,6 +53,12 @@ var (
 		Usage:       "print a report instead of csv",
 		Destination: &humanreadable,
 	}
+
+	outPathFlag = cli.StringFlag{
+		Name:  "out, o",
+		Usage: "save exported files in `OUTDIR`",
+		Value: "",
+	}
 )
 
 // bootstrapCommands simply adds a given command to the allCommands array

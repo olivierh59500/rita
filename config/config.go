@@ -33,6 +33,7 @@ type (
 		UrlsConfig              UrlsCfg        `yaml:"Urls"`
 		UserAgentConfig         UserAgentCfg   `yaml:"UserAgent"`
 		BroConfig               BroCfg         `yaml:"Bro"`
+		ExportConfig            ExportCfg      `yaml:"Export"`
 	}
 
 	StructureCfg struct {
@@ -85,6 +86,10 @@ type (
 		DirectoryMap map[string]string `yaml:"DirectoryMap"`
 		FilesTable   string            `yaml:"FilesTable"`
 		UseDates     bool              `yaml:"UseDates"`
+	}
+
+	ExportCfg struct {
+		ExportPath string `yaml:"ExportPath"`
 	}
 
 	// Resources provides a data structure for passing system Resources
