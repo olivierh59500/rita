@@ -37,17 +37,17 @@ func (e *Exporter) ExportAll(lType LogType) {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
 		e.ExportBeacon(lType)
 	}()
 
-	go func() {
-		defer wg.Done()
-		e.ExportScan(lType)
-	}()
+	// go func() {
+	// 	defer wg.Done()
+	// 	e.ExportScan(lType)
+	// }()
 
 	wg.Wait()
 
