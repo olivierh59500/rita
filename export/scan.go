@@ -1,10 +1,10 @@
 package export
 
 import (
-	"encoding/json"
+	"encoding/csv"
 	"os"
 	"path/filepath"
-	"sort"
+	"strconv"
 	"sync"
 	"time"
 
@@ -83,7 +83,7 @@ func (e *Exporter) scanWorkThread(c chan scanOutput, wc chan scanOutput, wg *syn
 		var connData map[string]interface{}
 
 		for iter.Next(&connData) {
-			tss = append(tss, connData["ts"].(int64))
+			tss = append(tss, int64(connData["ts"].(float64)))
 		}
 		entry.Timestamps = tss
 		wc <- entry
@@ -91,47 +91,73 @@ func (e *Exporter) scanWorkThread(c chan scanOutput, wc chan scanOutput, wg *syn
 }
 
 func (e *Exporter) scanWriteThread(c chan scanOutput, wg *sync.WaitGroup) int {
-	var results scanOutputs
+
+	scanPath := filepath.Join(e.cfg.System.ExportConfig.ExportPath, "scan.csv")
+	f_scan, err := os.Create(scanPath)
+	if err != nil {
+		e.cfg.Log.WithFields(log.Fields{
+			"Error": err,
+		}).Error("Error Opening Beacon Output File")
+		return 0
+	}
+	w_scan := csv.NewWriter(f_scan)
+
+	scanTssPath := filepath.Join(e.cfg.System.ExportConfig.ExportPath, "scan_tss.csv")
+	f_scanTss, err := os.Create(scanTssPath)
+	if err != nil {
+		e.cfg.Log.WithFields(log.Fields{
+			"Error": err,
+		}).Error("Error Opening Beacon Output File")
+		return 0
+	}
+	w_scanTss := csv.NewWriter(f_scanTss)
+
+	scanPortPath := filepath.Join(e.cfg.System.ExportConfig.ExportPath, "scan_ports.csv")
+	f_scanPort, err := os.Create(scanPortPath)
+	if err != nil {
+		e.cfg.Log.WithFields(log.Fields{
+			"Error": err,
+		}).Error("Error Opening Beacon Output File")
+		return 0
+	}
+	w_scanPort := csv.NewWriter(f_scanPort)
+
+	scanData := [][]string{{"id", "src", "dst", "port_count"}}
+	scanTssData := [][]string{{"id", "ts", "scan"}}
+	scanPortData := [][]string{{"id", "port", "scan"}}
+
 	count := 0
+	tssId := 0
+	portId := 0
 
 	for {
 		entry, more := <-c
 		if !more {
 			break
 		}
-		results = append(results, entry)
+		scanData = append(scanData, []string{strconv.Itoa(count), entry.Src, entry.Dst, strconv.Itoa(int(entry.PortCount))})
+		for _, ts := range entry.Timestamps {
+			scanTssData = append(scanTssData, []string{strconv.Itoa(tssId), strconv.Itoa(int(ts)), strconv.Itoa(count)})
+			tssId += 1
+		}
+
+		for _, port := range entry.PortSet {
+			scanPortData = append(scanPortData, []string{strconv.Itoa(portId), strconv.Itoa(int(port)), strconv.Itoa(count)})
+			portId += 1
+		}
+
 		count += 1
 	}
 
-	e.cfg.Log.Info("Sorting Scan Results")
+	w_scan.WriteAll(scanData)
+	w_scanPort.WriteAll(scanPortData)
+	w_scanTss.WriteAll(scanTssData)
 
-	sort.Sort(results)
+	// e.cfg.Log.Info("Sorting Scan Results")
 
-	e.cfg.Log.Info("Marshalling Scan Results")
+	// sort.Sort(results)
 
-	json, err := json.Marshal(results)
-
-	if err != nil {
-		e.cfg.Log.WithFields(log.Fields{
-			"Error": err,
-		}).Error("Error Marshalling Scan Results")
-		wg.Done()
-		return 0
-	}
-
-	path := filepath.Join(e.cfg.System.ExportConfig.ExportPath, "scan.json")
-
-	f, err := os.Create(path)
-
-	if err != nil {
-		e.cfg.Log.WithFields(log.Fields{
-			"Error": err,
-		}).Error("Error Opening Scan Output File")
-		wg.Done()
-		return 0
-	}
-
-	f.Write(json)
+	// e.cfg.Log.Info("Marshalling Scan Results")
 
 	wg.Done()
 
