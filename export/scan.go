@@ -83,7 +83,7 @@ func (e *Exporter) scanWorkThread(c chan scanOutput, wc chan scanOutput, wg *syn
 		var connData map[string]interface{}
 
 		for iter.Next(&connData) {
-			tss = append(tss, int64(connData["ts"].(float64)))
+			tss = append(tss, connData["ts"].(int64))
 		}
 		entry.Timestamps = tss
 		wc <- entry
@@ -97,7 +97,7 @@ func (e *Exporter) scanWriteThread(c chan scanOutput, wg *sync.WaitGroup) int {
 	if err != nil {
 		e.cfg.Log.WithFields(log.Fields{
 			"Error": err,
-		}).Error("Error Opening Beacon Output File")
+		}).Error("Error Opening Scan Output File")
 		return 0
 	}
 	w_scan := csv.NewWriter(f_scan)
@@ -107,7 +107,7 @@ func (e *Exporter) scanWriteThread(c chan scanOutput, wg *sync.WaitGroup) int {
 	if err != nil {
 		e.cfg.Log.WithFields(log.Fields{
 			"Error": err,
-		}).Error("Error Opening Beacon Output File")
+		}).Error("Error Opening Scan Output File")
 		return 0
 	}
 	w_scanTss := csv.NewWriter(f_scanTss)
@@ -117,7 +117,7 @@ func (e *Exporter) scanWriteThread(c chan scanOutput, wg *sync.WaitGroup) int {
 	if err != nil {
 		e.cfg.Log.WithFields(log.Fields{
 			"Error": err,
-		}).Error("Error Opening Beacon Output File")
+		}).Error("Error Opening Scan Output File")
 		return 0
 	}
 	w_scanPort := csv.NewWriter(f_scanPort)
@@ -135,6 +135,7 @@ func (e *Exporter) scanWriteThread(c chan scanOutput, wg *sync.WaitGroup) int {
 		if !more {
 			break
 		}
+
 		scanData = append(scanData, []string{strconv.Itoa(count), entry.Src, entry.Dst, strconv.Itoa(int(entry.PortCount))})
 		for _, ts := range entry.Timestamps {
 			scanTssData = append(scanTssData, []string{strconv.Itoa(tssId), strconv.Itoa(int(ts)), strconv.Itoa(count)})
