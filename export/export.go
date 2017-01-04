@@ -1,8 +1,6 @@
 package export
 
 import (
-	"sync"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/ocmdev/rita/config"
 )
@@ -36,20 +34,23 @@ func (e *Exporter) ExportAll(lType LogType) {
 		return
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(2)
+	// var wg sync.WaitGroup
+	// wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-		e.ExportBeacon(lType)
-	}()
+	// go func() {
+	// 	defer wg.Done()
+	// 	e.ExportBeacon(lType)
+	// }()
 
-	go func() {
-		defer wg.Done()
-		e.ExportScan(lType)
-	}()
+	// go func() {
+	// 	defer wg.Done()
+	// 	e.ExportScan(lType)
+	// }()
 
-	wg.Wait()
+	// wg.Wait()
+
+	// e.ExportBeacon(lType)
+	e.ExportScan(lType)
 
 	e.cfg.Log.Infoln("Finished Export")
 }
