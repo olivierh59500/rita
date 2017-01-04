@@ -11,24 +11,6 @@ import (
 	datatype_TBD "github.com/ocmdev/rita/datatypes/TBD"
 )
 
-// type (
-// 	beaconOutput struct {
-// 		ID            int64   `json:"id"`
-// 		Src           string  `json:"src"`
-// 		Dst           string  `json:"dst"`
-// 		Range         int64   `json:"range"`
-// 		Size          int64   `json:"size"`
-// 		RangeVals     string  `json:"range_vals"`
-// 		Fill          float64 `json:"fill"`
-// 		Spread        float64 `json:"spread"`
-// 		Sum           int64   `json:"range_size"`
-// 		Score         float64 `json:"score"`
-// 		Intervals     []int64 `json:"intervals"`
-// 		InvervalCount []int64 `json:"interval_counts"`
-// 		Tss           []int64 `json:"tss"`
-// 	}
-// )
-
 func (e *Exporter) ExportBeacon(lType LogType) {
 	myStart := time.Now()
 
@@ -117,6 +99,7 @@ func (e *Exporter) ExportBeacon(lType LogType) {
 			if err := w_int.Write(intervalData); err != nil {
 				log.Fatalln("error writing record to csv:", err)
 			}
+			intId += 1
 		}
 
 		count += 1
