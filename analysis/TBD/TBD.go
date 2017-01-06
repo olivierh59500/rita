@@ -194,6 +194,10 @@ func (t *TBD) analyze() {
 		//since we are calculating the times in between readings
 		length := len(data.ts) - 1
 
+		if length < 1 {
+			continue
+		}
+
 		//find the duration of this connection
 		//perfect beacons should fill the observation period
 		duration := float64(data.ts[length]-data.ts[0]) /
